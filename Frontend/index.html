@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .section {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #prediction-result, #performance-metrics {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .plot-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌸 Iris Classifier</h1>
+    <div class="container">
+        <div class="section">
+            <h2>Predict Iris Species</h2>
+            <div class="input-group">
+                <label for="sepal_length">Sepal Length (cm):</label>
+                <input type="number" id="sepal_length" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="sepal_width">Sepal Width (cm):</label>
+                <input type="number" id="sepal_width" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="petal_length">Petal Length (cm):</label>
+                <input type="number" id="petal_length" step="0.1" required>
+            </div>
+            <div class="input-group">
+                <label for="petal_width">Petal Width (cm):</label>
+                <input type="number" id="petal_width" step="0.1" required>
+            </div>
+            <button onclick="predict()">Predict</button>
+            <div id="prediction-result"></div>
+        </div>
+        <div class="section">
+            <h2>Model Performance</h2>
+            <div id="performance-metrics"></div>
+            <div class="plot-container">
+                <h3>Training and Validation Loss</h3>
+                <img src="static/loss_plot.png" alt="Loss Plot">
+            </div>
+            <div class="plot-container">
+                <h3>Training and Validation Accuracy</h3>
+                <img src="static/accuracy_plot.png" alt="Accuracy Plot">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function predict() {
+            const sepal_length = document.getElementById('sepal_length').value;
+            const sepal_width = document.getElementById('sepal_width').value;
+            const petal_length = document.getElementById('petal_length').value;
+            const petal_width = document.getElementById('petal_width').value;
+
+            if (!sepal_length || !sepal_width || !petal_length || !petal_width) {
+                document.getElementById('prediction-result').innerHTML = '<p class="error">Please fill in all fields.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        features: [parseFloat(sepal_length), parseFloat(sepal_width), 
+                                   parseFloat(petal_length), parseFloat(petal_width)]
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('prediction-result').innerHTML = 
+                        `<p><strong>Predicted Species:</strong> ${result.prediction}</p>
+                         <p><strong>Confidence:</strong> ${(result.confidence * 100).toFixed(2)}%</p>`;
+                } else {
+                    document.getElementById('prediction-result').innerHTML = 
+                        `<p class="error">Error: ${result.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('prediction-result').innerHTML = 
+                    `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function loadPerformanceMetrics() {
+            try {
+                const response = await fetch('http://localhost:5000/performance');
+                const data = await response.json();
+                document.getElementById('performance-metrics').innerHTML = `
+                    <p><strong>Test Accuracy:</strong> ${(data.test_accuracy * 100).toFixed(2)}%</p>
+                    <p><strong>Test Loss:</strong> ${data.test_loss.toFixed(4)}</p>
+                    <p><strong>Total Parameters:</strong> ${data.total_parameters}</p>
+                    <h3>Per-Class Accuracy</h3>
+                    <p><strong>Setosa:</strong> ${(data.per_class_accuracy.setosa * 100).toFixed(1)}%</p>
+                    <p><strong>Versicolor:</strong> ${(data.per_class_accuracy.versicolor * 100).toFixed(1)}%</p>
+                    <p><strong>Virginica:</strong> ${(data.per_class_accuracy.virginica * 100).toFixed(1)}%</p>
+                    <h3>Model Complexity</h3>
+                    <p><strong>Number of Layers:</strong> ${data.model_complexity.num_layers}</p>
+                    <p><strong>Hidden Layers:</strong> ${data.model_complexity.hidden_layers}</p>
+                    <p><strong>Total Parameters:</strong> ${data.model_complexity.total_parameters}</p>
+                    <h3>Training Efficiency</h3>
+                    <p><strong>Epochs Trained:</strong> ${data.training_efficiency.epochs_trained}</p>
+                    <p><strong>Training Accuracy:</strong> ${(data.training_efficiency.training_accuracy * 100).toFixed(2)}%</p>
+                    <p><strong>Validation Accuracy:</strong> ${(data.training_efficiency.validation_accuracy * 100).toFixed(2)}%</p>
+                `;
+            } catch (error) {
+                document.getElementById('performance-metrics').innerHTML = 
+                    `<p class="error">Error loading metrics: ${error.message}</p>`;
+            }
+        }
+
+        window.onload = loadPerformanceMetrics;
+    </script>
+</body>
+</html>

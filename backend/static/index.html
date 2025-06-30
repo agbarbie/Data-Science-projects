@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iris Classifier</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h1>🌸 Iris Classifier</h1>
+    <p class="subtitle">AI-Powered Flower Species Detection</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2>🔬 Analyze Flower</h2>
+
+        <div class="input-group">
+          <label for="sepal_length">Sepal Length (cm)</label>
+          <input type="number" id="sepal_length" step="0.1" placeholder="e.g., 5.1" />
+        </div>
+
+        <div class="input-group">
+          <label for="sepal_width">Sepal Width (cm)</label>
+          <input type="number" id="sepal_width" step="0.1" placeholder="e.g., 3.5" />
+        </div>
+
+        <div class="input-group">
+          <label for="petal_length">Petal Length (cm)</label>
+          <input type="number" id="petal_length" step="0.1" placeholder="e.g., 1.4" />
+        </div>
+
+        <div class="input-group">
+          <label for="petal_width">Petal Width (cm)</label>
+          <input type="number" id="petal_width" step="0.1" placeholder="e.g., 0.2" />
+        </div>
+
+        <button class="predict-btn" onclick="predict()">
+          <span id="btn-text">Predict Species</span>
+        </button>
+
+        <div id="result" class="result"></div>
+      </div>
+
+      <div class="card">
+        <h2>📊 Model Performance</h2>
+        <div class="metrics-grid">
+          <div class="metric">
+            <span class="metric-value" id="accuracy">--.--%</span>
+            <div class="metric-label">Accuracy</div>
+          </div>
+          <div class="metric">
+            <span class="metric-value" id="loss">--.--</span>
+            <div class="metric-label">Loss</div>
+          </div>
+          <div class="metric">
+            <span class="metric-value" id="params">---</span>
+            <div class="metric-label">Parameters</div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px;">Species Accuracy</h3>
+        <div id="class-accuracies"></div>
+      </div>
+
+      <div class="card charts">
+        <h2>📈 Training Charts</h2>
+        <div class="chart-container">
+          <div class="chart-section">
+            <h3>Training and Validation Loss</h3>
+            <img src="./loss_plot.png" alt="Loss Plot" style="width: 100%; border-radius: 10px;" />
+          </div>
+          <div class="chart-section">
+            <h3>Training and Validation Accuracy</h3>
+            <img src="./accuracy_plot.png" alt="Accuracy Plot" style="width: 100%; border-radius: 10px;" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>

@@ -6,7 +6,6 @@ import tensorflow as tf
 app = Flask(__name__, static_folder='static', static_url_path='')
 CORS(app)
 
-# ✅ Load the H5 model
 model = tf.keras.models.load_model("my_model.h5")
 
 @app.route('/')

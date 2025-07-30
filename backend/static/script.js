@@ -16,7 +16,8 @@ async function predict() {
         const response = await fetch('http://localhost:5000/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ features: values.map(parseFloat) })
+            // Changed 'features' to 'data' to match Flask app expectation
+            body: JSON.stringify({ data: values.map(parseFloat) })
         });
 
         const result = await response.json();
